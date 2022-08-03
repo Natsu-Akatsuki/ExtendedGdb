@@ -27,13 +27,16 @@ $ echo "source ~/.gdb/simple_usage.py" >> ~/.gdbinit
 $ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
 $ echo "source ~/.gdb/img_gdb.py" >> ~/.gdbinit
 $ echo "source ~/.gdb/breakpoint_gdb.py" >> ~/.gdbinit
+$ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
 ```
 
 ## 用例
 
+### [mat_pretty_printer](https://docs.opencv.org/4.x/d6/d25/tutorial_linux_gdb_pretty_printer.html#tutorial_linux_gdb_pretty_printer_installation)
+
 ### img_gdb
 
-基于Matplotlib查看图片
+基于Matplotlib查看图片（效果类同于J家三方插件`OpenCV Image Viewer`）
 
 ```bash
 (gdb) imshow <img>
@@ -73,3 +76,5 @@ $ echo "source ~/.gdb/breakpoint_gdb.py" >> ~/.gdbinit
 - [cv_imshow](https://github.com/cuekoo/GDB-ImageWatch)
 - [red hat pretty printer](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/developer_guide/debuggingprettyprinters)
 - [vscode中使用clang+clangd+lldb](https://blog.mchook.cn/2021/08/17/vscode%E4%B8%AD%E4%BD%BF%E7%94%A8clang+clangd+lldb/)
+- [GDB 自动化脚本](https://blog.csdn.net/nirendao/article/details/105942335)
+- [OpenCV official printer](https://github.com/opencv/opencv/tree/4.x/samples/gdb)
