@@ -71,10 +71,28 @@ $ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
 
 ![image-20220803112041923](https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220803112041923.png)
 
+### run_gdb_script
+
+```bash
+# 导入自定义断点
+(gdb) source run_gdb_script.py
+```
+
+## Q&A
+
+- CLion GDB 调用pcl_viewer后显示 "Evaluation hung: call func(e) This may be caused by something like a deadlock or an infinite loop.To prevent this from happening when variables are calculated, please toggle 'Enable value renderers' off."
+
+> （ctrl + shift + a） and typing "registry" and then enter. And then adjusting the "cidr.debugger.timeout.eveluate" setting to a larger，默认是30000ms（30s），可调大（ref：[detail](https://intellij-support.jetbrains.com/hc/en-us/community/posts/360001100139-Gdb-Debugging-Issue)）
+
+- 能否支持打开多个可视化窗口来查看数据
+
+> 不能。实测，只有关闭了GUI才能进行其他操作，即开新的GUI和执行GDB指令（用多线程也不能解决这个问题）。原因参考gdb文档：“gdb install handlers for SIGCHLD and SIGINT. Python code must not override these, or even change the options using sigaction. If your program changes the handling of these signals, gdb will most likely stop working correctly. **Note that it is unfortunately common for GUI toolkits to install a SIGCHLD handler**.”
+
 ## 参考资料
 
-- [cv_imshow](https://github.com/cuekoo/GDB-ImageWatch)
+- [github：cv_imshow](https://github.com/cuekoo/GDB-ImageWatch)
+- [GDB 自动化脚本](https://blog.csdn.net/nirendao/article/details/105942335)
+- [GDB 官网文档：Python-API](https://sourceware.org/gdb/onlinedocs/gdb/Python-API.html)
+- [OpenCV官方 pretty printer](https://github.com/opencv/opencv/tree/4.x/samples/gdb)
 - [red hat pretty printer](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/developer_guide/debuggingprettyprinters)
 - [vscode中使用clang+clangd+lldb](https://blog.mchook.cn/2021/08/17/vscode%E4%B8%AD%E4%BD%BF%E7%94%A8clang+clangd+lldb/)
-- [GDB 自动化脚本](https://blog.csdn.net/nirendao/article/details/105942335)
-- [OpenCV official printer](https://github.com/opencv/opencv/tree/4.x/samples/gdb)
