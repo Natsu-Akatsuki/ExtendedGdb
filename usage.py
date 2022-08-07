@@ -1,6 +1,11 @@
 import re
 import gdb
 import gdb.printing
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent))
+import pointcloud_gdb
 
 
 class ExampleFunc(gdb.Function):
@@ -74,8 +79,22 @@ class ExampleBreakpoint(gdb.Breakpoint):
         return False
 
 
+class PointcloudBreakPoint(gdb.Breakpoint):
+    def __init__(self, *args, **kwargs):
+        super(PointcloudBreakPoint, self).__init__(*args, **kwargs)
+
+    def parse_data(self, cloud_name=None, doView=False, doSave=False):
+        pointcloud_gdb.parse_pointcloud(cloud_name=cloud_name, doView=doView)
+        if doSave:
+            pass
+
+    def stop(self):
+        self.parse_data(cloud_name="target_cloud", doView=True)
+        return False
+
+
 # ExampleBreakpoint("<file_name:line_num>")
-# ExampleBreakpoint("<function_name>")
+PointcloudBreakPoint("test.cpp:29")
 
 # trigger the registration of the command with eigen_gdb.py
 ExampleCommand()
