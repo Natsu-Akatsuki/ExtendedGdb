@@ -4,14 +4,14 @@
 
 ## 碎碎念
 
-之前使用LLDB，但是拓展时遇到了一些奇奇怪怪的问题，例如：[detail](https://discourse.llvm.org/t/fail-to-use-pdb-module-to-debug-lldb-python-command-module/63984) + 相关的文档和案例不足 + CLion暂时只支持Bundled LLDB（使用第三方库时需要一些migration...）。于是回归GDB。暂时感觉LLDB有的功能（自己用过的功能），GDB也有。
+- 之前使用LLDB，但是拓展时遇到了一些奇奇怪怪的问题，例如：[detail](https://discourse.llvm.org/t/fail-to-use-pdb-module-to-debug-lldb-python-command-module/63984) + 相关的文档和案例不足 + CLion暂时只支持Bundled LLDB（使用第三方库时需要一些migration...）。于是回归GDB。暂时感觉LLDB有的功能（自己用过的功能），GDB也有。
 
 ## 依赖
 
 Test in ubuntu 22.04，系统内置python（3.10）
 
 ```bash
-$ pip3 install numpy matplotlib termcolor pathlib opencv-python
+$ pip3 install -r requirements.txt
 
 $ pip3 install open3d
 
@@ -23,47 +23,63 @@ $ pip3 install --user --pre https://storage.googleapis.com/open3d-releases-maste
 
 ```bash
 $ git clone https://github.com/Natsu-Akatsuki/ExtendedGdb ~/.gdb
-$ echo "source ~/.gdb/simple_usage.py" >> ~/.gdbinit
-$ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
-$ echo "source ~/.gdb/img_gdb.py" >> ~/.gdbinit
-$ echo "source ~/.gdb/breakpoint_gdb.py" >> ~/.gdbinit
-$ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
 ```
 
 ## 用例
 
-### [mat_pretty_printer](https://docs.opencv.org/4.x/d6/d25/tutorial_linux_gdb_pretty_printer.html#tutorial_linux_gdb_pretty_printer_installation)
+### 矩阵
 
-### img_gdb
+#### Pretty Printer
+
+- 适用于Eigen数据类型
+
+```bash
+# 导入脚本
+$ echo "source ~/.gdb/eigen_gdb.py" >> ~/.gdbinit
+```
+
+
+
+<img src="https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220805111825205.png" alt="image-20220805111825205" style="zoom: 80%;" />
+
+### 图片
+
+#### Viewer
 
 基于Matplotlib查看图片（效果类同于J家三方插件`OpenCV Image Viewer`）
 
 ```bash
+# 导入脚本
+$ echo "source ~/.gdb/img_gdb.py" >> ~/.gdbinit
+
+# 可视化图片
 (gdb) imshow <img>
 ```
 
 ![image-20220803112325107](https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220803112325107.png)
 
-### simple_usage
+#### [Pretty_Printer](https://docs.opencv.org/4.x/d6/d25/tutorial_linux_gdb_pretty_printer.html#tutorial_linux_gdb_pretty_printer_installation)
 
-- Pretty Printer（自定义某对象的print输出）
-- 基于python的自定义gdb命令
-- 基于python的自定义gdb函数
-- 条件断点的设置
+```bash
+# 导入脚本
+$ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
+```
 
-### pointcloud_gdb
+### 点云
+
+#### Viewer
 
 基于Open3D查看点云
 
 > **Note**</br>
 >
-> 使用时，需要在对应行加入如下代码（让编译器对该函数进行编译）
->
-> ```c++
-> <pointcloud>.get()->points.data();
-> ```
+> 出现卡顿时，要看下是否在读大点云（由于内部实现是for循环取值，加载大点云需要较长时间）
 
 ```bash
+# 导入脚本
+$ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
+
+# 可视化点云
 (gdb) pcl_viewer <pointcloud>
 # 可视化和保存点云
 (gdb) pcl_viewer <pointcloud> -s
@@ -71,22 +87,45 @@ $ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
 
 ![image-20220803112041923](https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220803112041923.png)
 
-### run_gdb_script
+### Usage
 
-```bash
-# 导入自定义断点
-(gdb) source run_gdb_script.py
-```
+包括但不限于
+
+- Pretty Printer的使用用例（自定义某对象的`print`输出）
+- 基于python的自定义gdb命令
+- 基于python的自定义gdb函数
+- 条件断点的设置
 
 ## Q&A
+
+### IDE
 
 - CLion GDB 调用pcl_viewer后显示 "Evaluation hung: call func(e) This may be caused by something like a deadlock or an infinite loop.To prevent this from happening when variables are calculated, please toggle 'Enable value renderers' off."
 
 > （ctrl + shift + a） and typing "registry" and then enter. And then adjusting the "cidr.debugger.timeout.eveluate" setting to a larger，默认是30000ms（30s），可调大（ref：[detail](https://intellij-support.jetbrains.com/hc/en-us/community/posts/360001100139-Gdb-Debugging-Issue)）
 
+### GDB
+
 - 能否支持打开多个可视化窗口来查看数据
 
 > 不能。实测，只有关闭了GUI才能进行其他操作，即开新的GUI和执行GDB指令（用多线程也不能解决这个问题）。原因参考gdb文档：“gdb install handlers for SIGCHLD and SIGINT. Python code must not override these, or even change the options using sigaction. If your program changes the handling of these signals, gdb will most likely stop working correctly. **Note that it is unfortunately common for GUI toolkits to install a SIGCHLD handler**.”
+
+#### 内联
+
+- 使用gdb.parse_and_eval("pointcloud.get().points.data()")时，显示 gdb.error: Cannot evaluate function -- may be inlined
+
+> 需要对该函数显式地进行实例化（@[ref](https://stackoverflow.com/a/22163969/19371684)）
+>
+> ```
+> // 在对应的函数中添加
+> pointcloud.get()->points.data();
+> ```
+
+#### 寄存器
+
+- Couldn't get registers: No such process
+
+> 实测时发现这种方法取值 gdb.parse_and_eval("pointcloud.get().points.data()") 不太稳定，因此还是一步步来，先得到gdb.Value再取值
 
 ## 参考资料
 
