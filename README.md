@@ -71,10 +71,6 @@ $ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
 
 基于Open3D查看点云
 
-> **Note**</br>
->
-> 出现卡顿时，要看下是否在读大点云（由于内部实现是for循环取值，加载大点云需要较长时间）
-
 ```bash
 # 导入脚本
 $ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
@@ -86,15 +82,6 @@ $ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
 ```
 
 ![image-20220803112041923](https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220803112041923.png)
-
-### Usage
-
-包括但不限于
-
-- Pretty Printer的使用用例（自定义某对象的`print`输出）
-- 基于python的自定义gdb命令
-- 基于python的自定义gdb函数
-- 条件断点的设置
 
 ## Q&A
 

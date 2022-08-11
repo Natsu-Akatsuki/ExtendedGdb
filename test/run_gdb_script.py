@@ -10,6 +10,7 @@ class ExampleBreakPoint1(gdb.Breakpoint):
 
     def stop(self):
         gdb.execute("p example_i")
+        return False
 
 
 class ExampleBreakPoint2(gdb.Breakpoint):
@@ -46,6 +47,7 @@ class ExampleFunctionBreakpoint(gdb.Breakpoint):
 
 def setup():
     print(f"Running GDB from: {gdb.PYTHONDIR}")
+    # 不进行分页，避免设置断点时block
     gdb.execute("set pagination off")
     gdb.execute("set print pretty")
 

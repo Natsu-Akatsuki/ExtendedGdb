@@ -4,6 +4,7 @@ import gdb
 from pathlib import Path
 from datetime import datetime
 from termcolor import cprint
+import re
 
 
 def parse_pointcloud(cloud_name=None, doView=False):
@@ -14,33 +15,44 @@ def parse_pointcloud(cloud_name=None, doView=False):
     if cloud_name is None:
         return
 
-    m_ptr_ = gdb.parse_and_eval(f"{cloud_name}").type.fields()[0].name
-    #
     # 20.04: boost smarter pointer (px)
     # 22.04: std smarter pointer (_M_ptr)
-    pointcloud = gdb.parse_and_eval(f"{cloud_name}")[f"{m_ptr_}"].dereference()
+    pointcloud = None
+    ptr_version = gdb.parse_and_eval(f"target_cloud").type.unqualified().strip_typedefs().tag
+    if bool(re.search("^std::shared_ptr<.*>$", ptr_version)):
+        # e.g. "std::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >"
+        pointcloud = gdb.parse_and_eval(f"{cloud_name}")["_M_ptr"].dereference()
+    elif bool(re.search("^boost::shared_ptr<.*>$", ptr_version)):
+        # e.g.  "boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >"
+        pointcloud = gdb.parse_and_eval(f"{cloud_name}")["px"].dereference()
+    else:
+        return
 
-    pointcloud_vec = pointcloud['points']
+    pointcloud_vec = pointcloud['points']  # ->vector
     point_num = pointcloud['width'] * pointcloud['height']
 
-    # note: 以向量的方式读取（如下迭代的时间较长，但够用了）
-    # @https://stackoverflow.com/questions/57147836/indexing-c-vector-in-python-gdb-script
-    i = 0
-    value_reference = pointcloud_vec['_M_impl']['_M_start']
-    pointcloud_np = np.zeros((point_num, 3), dtype=np.float32)
+    # step1: 从内存中读取点云数据
+    inferior = gdb.inferiors()[0]
+    start_address = pointcloud_vec['_M_impl']['_M_start']
+    print(pointcloud_vec['_M_impl']['_M_start'])
+    end_address = pointcloud_vec['_M_impl']['_M_finish']
+    print(type(start_address))
+    memory_size = int(end_address) - int(start_address)
+    underlying_data = inferior.read_memory(start_address, memory_size)  # bytes (e.g 128 bytes)
 
-    while value_reference != pointcloud_vec['_M_impl']['_M_finish']:
-        pointcloud_np[i][0] = value_reference.dereference()['x']
-        pointcloud_np[i][1] = value_reference.dereference()['y']
-        pointcloud_np[i][2] = value_reference.dereference()['z']
-        i += 1
-        value_reference += 1
+    # step2：将数据封装为numpy数据类型
+    # note: 需要使用row-major（eigen存储数据为row-major）
+    pointcloud_np = np.frombuffer(underlying_data, dtype=np.float32, count=-1)  # read all data
+    pointcloud_np = pointcloud_np.reshape((point_num, 4), order='C')[:, :3]
 
-    point_cloud_o3d = o3d.geometry.PointCloud()
-    point_cloud_o3d.points = o3d.utility.Vector3dVector(pointcloud_np)
+    # step3：可视化
     if doView:
+        point_cloud_o3d = o3d.geometry.PointCloud()
+        point_cloud_o3d.points = o3d.utility.Vector3dVector(pointcloud_np)
         o3d.visualization.draw_geometries([point_cloud_o3d], width=500, height=500)
-    return point_cloud_o3d
+        return point_cloud_o3d
+
+    return None
 
 
 class PCLViewer(gdb.Command):
@@ -62,7 +74,7 @@ class PCLViewer(gdb.Command):
 
         point_cloud_o3d = parse_pointcloud(cloud_name=pointcloud_name, doView=True)
         # 导出点云文件
-        if len(args) > 1:
+        if (len(args) > 1) and (point_cloud_o3d is not None):
             if isinstance(args[1], str) and args[1] == '-s':
                 cur_time = datetime.now().strftime('%H-%M-%S')
 

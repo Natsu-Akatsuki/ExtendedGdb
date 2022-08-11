@@ -7,7 +7,9 @@ from pathlib import Path
 import pandas as pd
 import open3d as o3d
 
-sys.path.append(str((Path(__file__) / "..").resolve().parent))
+import os
+sys.path.append(os.getenv("HOME") + "/" + ".gdb")
+
 import pointcloud_gdb
 import eigen_gdb
 
