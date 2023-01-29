@@ -18,7 +18,7 @@ def parse_pointcloud(cloud_name=None, doView=False):
     # 20.04: boost smarter pointer (px)
     # 22.04: std smarter pointer (_M_ptr)
     pointcloud = None
-    ptr_version = gdb.parse_and_eval(f"target_cloud").type.unqualified().strip_typedefs().tag
+    ptr_version = gdb.parse_and_eval(f"{cloud_name}").type.unqualified().strip_typedefs().tag
     if bool(re.search("^std::shared_ptr<.*>$", ptr_version)):
         # e.g. "std::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >"
         pointcloud = gdb.parse_and_eval(f"{cloud_name}")["_M_ptr"].dereference()
@@ -34,9 +34,7 @@ def parse_pointcloud(cloud_name=None, doView=False):
     # step1: 从内存中读取点云数据
     inferior = gdb.inferiors()[0]
     start_address = pointcloud_vec['_M_impl']['_M_start']
-    print(pointcloud_vec['_M_impl']['_M_start'])
     end_address = pointcloud_vec['_M_impl']['_M_finish']
-    print(type(start_address))
     memory_size = int(end_address) - int(start_address)
     underlying_data = inferior.read_memory(start_address, memory_size)  # bytes (e.g 128 bytes)
 
