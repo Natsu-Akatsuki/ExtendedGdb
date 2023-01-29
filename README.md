@@ -6,7 +6,7 @@
 
 - 之前使用LLDB，但是拓展时遇到了一些奇奇怪怪的问题，例如：[detail](https://discourse.llvm.org/t/fail-to-use-pdb-module-to-debug-lldb-python-command-module/63984) + 相关的文档和案例不足 + CLion暂时只支持Bundled LLDB（使用第三方库时需要一些migration...）。于是回归GDB。暂时感觉LLDB有的功能（自己用过的功能），GDB也有。
 
-## 依赖
+## Dependency
 
 Test in ubuntu 22.04，系统内置python（3.10）
 
@@ -19,34 +19,37 @@ $ pip3 install open3d
 $ pip3 install --user --pre https://storage.googleapis.com/open3d-releases-master/python-wheels/open3d-0.15.2+a1f65dc-cp310-cp310-manylinux_2_27_x86_64.whl
 ```
 
-## 安装
+## Install
 
 ```bash
 $ git clone https://github.com/Natsu-Akatsuki/ExtendedGdb ~/.gdb
 ```
 
-## 用例
+## Usage
 
-### 矩阵
+### Pretty Printer
 
-#### Pretty Printer
-
-- 适用于Eigen数据类型
+- For Eigen data
 
 ```bash
 # 导入脚本
 $ echo "source ~/.gdb/eigen_gdb.py" >> ~/.gdbinit
 ```
 
+<p align="center">
+<img src="https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20230130013111289.png" alt="img" width=67% style="zoom:67%"/>
+</p>
 
+- [For OpenCV matrix](https://docs.opencv.org/4.x/d6/d25/tutorial_linux_gdb_pretty_printer.html#tutorial_linux_gdb_pretty_printer_installation)
 
-<img src="https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220805111825205.png" alt="image-20220805111825205" style="zoom: 80%;" />
+```bash
+# 导入脚本
+$ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
+```
 
-### 图片
+### Viewer
 
-#### Viewer
-
-基于Matplotlib查看图片（效果类同于J家三方插件`OpenCV Image Viewer`）
+- 基于Matplotlib查看图片（效果类同于J家三方插件`OpenCV Image Viewer`）
 
 ```bash
 # 导入脚本
@@ -58,18 +61,7 @@ $ echo "source ~/.gdb/img_gdb.py" >> ~/.gdbinit
 
 ![image-20220803112325107](https://natsu-akatsuki.oss-cn-guangzhou.aliyuncs.com/img/image-20220803112325107.png)
 
-#### [Pretty_Printer](https://docs.opencv.org/4.x/d6/d25/tutorial_linux_gdb_pretty_printer.html#tutorial_linux_gdb_pretty_printer_installation)
-
-```bash
-# 导入脚本
-$ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
-```
-
-### 点云
-
-#### Viewer
-
-基于Open3D查看点云
+- 基于Open3D查看点云
 
 ```bash
 # 导入脚本
@@ -122,3 +114,4 @@ $ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
 - [OpenCV官方 pretty printer](https://github.com/opencv/opencv/tree/4.x/samples/gdb)
 - [red hat pretty printer](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/developer_guide/debuggingprettyprinters)
 - [vscode中使用clang+clangd+lldb](https://blog.mchook.cn/2021/08/17/vscode%E4%B8%AD%E4%BD%BF%E7%94%A8clang+clangd+lldb/)
+- [Eigen官方 pretty printer](https://gitlab.com/libeigen/eigen/-/blob/master/debug/gdb/printers.py)
