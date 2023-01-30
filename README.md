@@ -1,22 +1,16 @@
 # GDB
 
-- 本仓库记录基于python的gdb拓展命令
-
-## 碎碎念
-
-- 之前使用LLDB，但是拓展时遇到了一些奇奇怪怪的问题，例如：[detail](https://discourse.llvm.org/t/fail-to-use-pdb-module-to-debug-lldb-python-command-module/63984) + 相关的文档和案例不足 + CLion暂时只支持Bundled LLDB（使用第三方库时需要一些migration...）。于是回归GDB。暂时感觉LLDB有的功能（自己用过的功能），GDB也有。
+本仓库记录基于Python的GDB拓展命令和[常用操作](Memo.md)
 
 ## Dependency
 
-Test in ubuntu 22.04，系统内置python（3.10）
+| System      | Python Version        | Pass |
+|-------------|-----------------------|------|
+| Ubuntu22.04 | Built-in Python(3.10) | √    |
+| Ubuntu20.04 | Built-in Python(3.7)  | √    |
 
 ```bash
 $ pip3 install -r requirements.txt
-
-$ pip3 install open3d
-
-# 如果使用python3.10（e.g ubuntu22.04内置Python默认版本为3.10），则需要：
-$ pip3 install --user --pre https://storage.googleapis.com/open3d-releases-master/python-wheels/open3d-0.15.2+a1f65dc-cp310-cp310-manylinux_2_27_x86_64.whl
 ```
 
 ## Install
@@ -49,7 +43,7 @@ $ echo "source ~/.gdb/mat_pretty_printer.py" >> ~/.gdbinit
 
 ### Viewer
 
-- 基于Matplotlib查看图片（效果类同于J家三方插件`OpenCV Image Viewer`）
+- 基于**Matplotlib**查看图片（效果类同于J家三方插件`OpenCV Image Viewer`）
 
 ```bash
 # 导入脚本
@@ -106,12 +100,12 @@ $ echo "source ~/.gdb/pointcloud_gdb.py" >> ~/.gdbinit
 
 > 实测时发现这种方法取值 gdb.parse_and_eval("pointcloud.get().points.data()") 不太稳定，因此还是一步步来，先得到gdb.Value再取值
 
-## 参考资料
+## Reference
 
 - [github：cv_imshow](https://github.com/cuekoo/GDB-ImageWatch)
 - [GDB 自动化脚本](https://blog.csdn.net/nirendao/article/details/105942335)
 - [GDB 官网文档：Python-API](https://sourceware.org/gdb/onlinedocs/gdb/Python-API.html)
 - [OpenCV官方 pretty printer](https://github.com/opencv/opencv/tree/4.x/samples/gdb)
+- [Eigen官方 pretty printer](https://gitlab.com/libeigen/eigen/-/blob/master/debug/gdb/printers.py)
 - [red hat pretty printer](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/developer_guide/debuggingprettyprinters)
 - [vscode中使用clang+clangd+lldb](https://blog.mchook.cn/2021/08/17/vscode%E4%B8%AD%E4%BD%BF%E7%94%A8clang+clangd+lldb/)
-- [Eigen官方 pretty printer](https://gitlab.com/libeigen/eigen/-/blob/master/debug/gdb/printers.py)

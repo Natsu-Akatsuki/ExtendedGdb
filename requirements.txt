@@ -4,3 +4,4 @@ opencv-python
 pandas
 pathlib
 termcolor
+open3d
